@@ -14,7 +14,7 @@ residual = @(currT) ...
     - flux_BC(currT,hinf, hsup, Tinf, Tsup)' ; 
     
 %% solve
-options = optimoptions('fsolve','Display','none');
+options = optimset('Display','none');
 Tfinal = fsolve (residual, Tinit, options);
 end
 
@@ -22,8 +22,8 @@ end
 function M = capacity_matrix(T,dt,Le,properties)
 
 Np = length(T);
-rho = properties.rho_a + properties.rho_b * T;
-cp = properties.cp_a + properties.cp_b * T;
+rho = properties.rho_a + properties.rho_b .* T;
+cp = properties.cp_a + properties.cp_b .* T;
 rhocp_dt = rho .* cp / dt;
 
 % set values

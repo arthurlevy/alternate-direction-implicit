@@ -14,7 +14,9 @@ residual = @(currT) ...
     - flux_BC(currT,hinf, hsup, Tinf, Tsup)' ; 
     
 %% solve
-options = optimset('Display','none');
+toleranceT = 1e-3; %degC characteristic tolerance on temperatures
+toleranceResidual = 1e-8;% characetristic tolerance for residual
+options = optimset('Display','iter', 'TolFun', 1e-4, 'TolX', 1e-8 );
 Tfinal = fsolve (residual, Tinit, options);
 end
 
@@ -66,5 +68,5 @@ function RHS = flux_BC(T,hinf, hsup, Tinf, Tsup)
 Np = length(T);
 
 RHS(1) = -hinf * (T(1) - Tinf);
-RHS(Np) = hsup * (T(end) - Tsup);
+RHS(Np) = -hsup * (T(end) - Tsup);
 end

@@ -14,9 +14,12 @@ residual = @(currT) ...
     - flux_BC(currT,hinf, hsup, Tinf, Tsup)' ; 
     
 %% solve
-toleranceT = 1e-3; %degC characteristic tolerance on temperatures
+toleranceT = 1e-4; %degC characteristic tolerance on temperatures
 toleranceResidual = 1e-8;% characetristic tolerance for residual
-options = optimset('Display','iter', 'TolFun', 1e-4, 'TolX', 1e-8 );
+
+options = optimset('Display','notify',...
+    'TolFun', toleranceT, 'TolX', toleranceResidual );
+
 Tfinal = fsolve (residual, Tinit, options);
 end
 

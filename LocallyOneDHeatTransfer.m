@@ -1,5 +1,6 @@
 %solves the heat transfer problem using the additive decomposition method
-%[Hoang et al 2016] which is better called locally one dimensional. 
+%[Hoang et al 2016] which is better called locally one dimensional or
+%alternate direction implicit method. 
 function T_history = LocallyOneDHeatTransfer
 
 %% time discretization

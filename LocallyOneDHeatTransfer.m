@@ -4,10 +4,10 @@
 function T_history = LocallyOneDHeatTransfer
 
 %% time discretization
-t_final = 2;
-dt = 0.05;
-tspan = 0:dt:t_final;
-nb_time_step = length(tspan);
+t_final = 20;
+nb_time_step = 70;
+%non constant time mesh
+tspan = linspace(0,t_final,nb_time_step).^2 / t_final;
 
 %% space discretization
 nbnodePm = 50;
@@ -20,6 +20,7 @@ T = 400 * ones(nbnodePm, nbnodePz);
 T_half = zeros(nbnodePm, nbnodePz);
 %temperature history
 T_history = zeros(nbnodePm, nbnodePz, nb_time_step);
+T_history (:,:,1) = T;
 
 %% geometry
 L_f = 20e-2; %flange length
@@ -46,11 +47,14 @@ Tinf(xspan <= L_poincon/2+shear_edge) = Tair;
 Tsup(xspan >  L_poincon/2) = Tair ;
 Tsup(xspan <=  L_poincon/2) = Tmould;
 
-for i_time = 1:nb_time_step
+
+for i_time = 2:nb_time_step
     display ( [num2str(i_time), ' : time = ', num2str(tspan(i_time))])
+    %update dt
+    dt = tspan(i_time)-tspan(i_time-1);
     
     %% for each in plane position
-    parfor iter_position_m = 1:nbnodePm  
+    for iter_position_m = 1:nbnodePm  
         %solve Pz : T_half is T_{n+1/2}
         T_half(iter_position_m,:) =...
             Pz1D(T(iter_position_m,:)',...
@@ -70,8 +74,7 @@ for i_time = 1:nb_time_step
      
     %% store solution
     T_history(:,:,i_time) = T;
-    surf(T);
-    drawnow;
+    
 end% time loop
 
 surf(T_history(:,:,end));

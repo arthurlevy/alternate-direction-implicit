@@ -11,14 +11,15 @@ Nel=Np-1; Le = L/Nel;
 residual = @(currT) ...
     capacity_matrix(currT,dt,Le,oneStepProperties) * (currT - Tinit) ...
     +  conductivity_matrix(currT,Le,oneStepProperties) * currT ...
-    - flux_BC(currT,hinf, hsup, Tinf, Tsup)' ; 
+    + flux_BC(currT,hinf, hsup, Tinf, Tsup)' ;
     
 %% solve
-toleranceT = 1e-4; %degC characteristic tolerance on temperatures
-toleranceResidual = 1e-8;% characetristic tolerance for residual
+toleranceT = 1e-3; %degC characteristic tolerance on temperatures
+toleranceResidual = 1e-3;% characetristic tolerance for residual
 
-options = optimset('Display','notify',...
-    'TolFun', toleranceT, 'TolX', toleranceResidual );
+options = optimset('Display','iter',...
+    'TolFun', toleranceResidual, 'TolX', toleranceT,...
+    'Algorithm', 'Levenberg-marquardt');
 
 Tfinal = fsolve (residual, Tinit, options);
 end
@@ -36,10 +37,10 @@ idxcolumn =    [1:Np,    1:Np-1,    2:Np];
 
 idxline   =    [1:Np,   2:Np,    1:Np-1];
 
-values    = Le *...
-    [rhocp_dt(1)/3 ; (2/3)*rhocp_dt(2:end-1); rhocp_dt(end)/3 ;...
-    1/6*rhocp_dt(1:end-1);...
-    1/6*rhocp_dt(2:end)];
+values    = Le/6 *...
+    [2*rhocp_dt(1) ; 4*rhocp_dt(2:end-1); 2*rhocp_dt(end) ;...
+    rhocp_dt(1:end-1);...
+    rhocp_dt(2:end)];
 
 %assemble
 M = sparse ( idxcolumn  , idxline  , values  ,     Np,Np);
@@ -70,6 +71,6 @@ end
 function RHS = flux_BC(T,hinf, hsup, Tinf, Tsup)
 Np = length(T);
 
-RHS(1) = -hinf * (T(1) - Tinf);
-RHS(Np) = -hsup * (T(end) - Tsup);
+RHS(1) = hinf * (T(1) - Tinf);
+RHS(Np) = hsup * (T(end) - Tsup);
 end

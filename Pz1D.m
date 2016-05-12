@@ -6,11 +6,11 @@ function TzFinal = Pz1D(Tinit,hinf, hsup, Tinf, Tsup, dt)
 %rho = rho_a + T*rho_b ...
 
 PzProperties.k_a = 0.42;
-PzProperties.k_b = 0*1e-3;
+PzProperties.k_b = 1e-3;
 PzProperties.rho_a = 1600;
-PzProperties.rho_b = -0*0.2;
+PzProperties.rho_b = -0.2;
 PzProperties.cp_a = 800;
-PzProperties.cp_b = 0*2.25;
+PzProperties.cp_b = 2.25;
 
 L = 2e-3;
 

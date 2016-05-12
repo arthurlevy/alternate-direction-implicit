@@ -1,17 +1,16 @@
 %solves the heat transfer problem using the additive decomposition method
 %[Hoang et al 2016] which is better called locally one dimensional or
 %alternate direction implicit method. 
-function T_history = LocallyOneDHeatTransfer
+function [T_history, tspan, xspan] = LocallyOneDHeatTransfer
 
 %% time discretization
-t_final = 20;
-nb_time_step = 70;
 %non constant time mesh
-tspan = linspace(0,t_final,nb_time_step).^2 / t_final;
+load('tspan.mat')
+nb_time_step = length(tspan);
 
 %% space discretization
-nbnodePm = 50;
-nbnodePz = 20;
+nbnodePm = 201;
+nbnodePz = 40;
 
 %% initial temperature
 T = 400 * ones(nbnodePm, nbnodePz);
@@ -30,9 +29,9 @@ shear_edge = 0.004;
 xspan = linspace(0,L_f/2,nbnodePm);
 
 %% set Pm boundary values
-hmould = 5000;% exchange coeff with mould
+hmould = 1000;% exchange coeff with mould
 hair = 10; %exchange coeff with air
-Tmould = 200; %mould temperature
+Tmould = 250; %mould temperature
 Tair = 70; %air temeprature
 
 hinf(xspan > L_poincon/2+shear_edge) = hmould;

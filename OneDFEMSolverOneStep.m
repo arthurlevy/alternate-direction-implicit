@@ -7,24 +7,38 @@ Np = length(Tinit);
 
 Nel=Np-1; Le = L/Nel;
 
-%% define residual function
-residual = @(currT) ...
-    capacity_matrix(currT,dt,Le,oneStepProperties) * (currT - Tinit) ...
-    +  conductivity_matrix(currT,Le,oneStepProperties) * currT ...
-    + flux_BC(currT,hinf, hsup, Tinf, Tsup)' ;
-    
-%% solve
-toleranceT = 1e-3; %degC characteristic tolerance on temperatures
-toleranceResidual = 1e-3;% characetristic tolerance for residual
+%% solver options
+toleranceT = 1e-9; %degC characteristic tolerance on temperatures
+toleranceResidual = 1e-12;% characetristic tolerance for residual
 
-options = optimset('Display','iter',...
+options = optimset('Display','none',...
     'TolFun', toleranceResidual, 'TolX', toleranceT,...
-    'Algorithm', 'Levenberg-marquardt');
+    'Algorithm', 'Levenberg-marquardt');%,...
+    %'Jacobian', 'on');
 
-Tfinal = fsolve (residual, Tinit, options);
+%% solve
+Tfinal = fsolve (...
+    @(T) residual(T, dt, Le, oneStepProperties, Tinit, hinf,hsup,Tinf,Tsup),...
+    Tinit, options);
 end
 
-%mass matrix assembling
+
+%residual function to be zeroed
+function [residual, jacobian] = residual(T, dt, Le, oneStepProperties, Tinit,...
+    hinf,hsup,Tinf,Tsup)
+
+M_dt = capacity_matrix(T,dt,Le,oneStepProperties);
+K = conductivity_matrix(T,Le,oneStepProperties);
+[RHS, dRHS_dT] = flux_BC(T,hinf, hsup, Tinf, Tsup);
+
+residual = M_dt * (T-Tinit)  +  K * T  +  RHS';
+
+jacobian = M_dt + K + dRHS_dT;% ...
+ %   + ;
+end
+
+
+%mass matrix assembling (M/dt)
 function M = capacity_matrix(T,dt,Le,properties)
 
 Np = length(T);
@@ -68,9 +82,11 @@ K = sparse ( idxcolumn  , idxline  , values  ,     Np,Np);
 end
 
 %right hand side assembling boundary conditions
-function RHS = flux_BC(T,hinf, hsup, Tinf, Tsup)
+function [RHS, dRHS_dT] = flux_BC(T,hinf, hsup, Tinf, Tsup)
 Np = length(T);
 
-RHS(1) = hinf * (T(1) - Tinf);
-RHS(Np) = hsup * (T(end) - Tsup);
+RHS(1)  =  hinf * (T(1) - Tinf);
+RHS(Np) =  hsup * (T(end) - Tsup);
+
+dRHS_dT = sparse([1,Np],[1,Np],[hinf, hsup]);
 end

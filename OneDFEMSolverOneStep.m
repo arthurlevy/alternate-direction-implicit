@@ -7,36 +7,18 @@ Np = length(Tinit);
 
 Nel=Np-1; Le = L/Nel;
 
-%% solver options
-toleranceT = 1e-9; %degC characteristic tolerance on temperatures
-toleranceResidual = 1e-12;% characetristic tolerance for residual
+%% Right hand side
+M_dt = capacity_matrix(Tinit,dt,Le,oneStepProperties);
+Fluxes = flux_BC(Tinit,hinf, hsup, Tinf, Tsup);
+RHS = M_dt * Tinit - Fluxes';
 
-options = optimset('Display','none',...
-    'TolFun', toleranceResidual, 'TolX', toleranceT,...
-    'Algorithm', 'Levenberg-marquardt');%,...
-    %'Jacobian', 'on');
+%% Tangent Matrix
+K = conductivity_matrix(Tinit,Le,oneStepProperties);
+A = M_dt + K;
 
-%% solve
-Tfinal = fsolve (...
-    @(T) residual(T, dt, Le, oneStepProperties, Tinit, hinf,hsup,Tinf,Tsup),...
-    Tinit, options);
+%% Solving
+Tfinal = A\RHS; 
 end
-
-
-%residual function to be zeroed
-function [residual, jacobian] = residual(T, dt, Le, oneStepProperties, Tinit,...
-    hinf,hsup,Tinf,Tsup)
-
-M_dt = capacity_matrix(T,dt,Le,oneStepProperties);
-K = conductivity_matrix(T,Le,oneStepProperties);
-[RHS, dRHS_dT] = flux_BC(T,hinf, hsup, Tinf, Tsup);
-
-residual = M_dt * (T-Tinit)  +  K * T  +  RHS';
-
-jacobian = M_dt + K + dRHS_dT;% ...
- %   + ;
-end
-
 
 %mass matrix assembling (M/dt)
 function M = capacity_matrix(T,dt,Le,properties)
